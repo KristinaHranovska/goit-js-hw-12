@@ -4,7 +4,6 @@ import "izitoast/dist/css/iziToast.min.css";
 
 export { getPictures }
 
-
 const perPage = 40;
 
 async function getPictures(name, page) {

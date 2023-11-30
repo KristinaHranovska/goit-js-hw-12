@@ -26,10 +26,11 @@ btnLoader.addEventListener('click', onLoadMore);
 
 function onSearch(event) {
     event.preventDefault();
+
+    currentPage = 1;
     listImages.innerHTML = '';
     loader.style.display = 'block';
     btnLoader.style.display = 'none';
-    currentPage = 1;
 
     inputSearch = event.target.elements.search.value;
 
