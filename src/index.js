@@ -4,6 +4,7 @@ import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
 import { createMarkup } from "./js/create-markup";
 import { getPictures } from "./js/get-pictures";
+import { scrollingTopPage } from "./js/scrolling";
 
 const formSearch = document.querySelector('.js-search');
 const listImages = document.querySelector('.gallery');
@@ -23,6 +24,7 @@ btnLoader.style.display = 'none';
 formSearch.addEventListener('submit', onSearch);
 btnLoader.addEventListener('click', onLoadMore);
 
+scrollingTopPage();
 
 function onSearch(event) {
     event.preventDefault();
