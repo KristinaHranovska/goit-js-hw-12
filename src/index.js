@@ -2,9 +2,8 @@ import iziToast from "izitoast";
 import "izitoast/dist/css/iziToast.min.css";
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
-import { createMarkup } from "./create-markup";
-import { getPictures } from "./get-pictures";
-
+import { createMarkup } from "./js/create-markup";
+import { getPictures } from "./js/get-pictures";
 
 const formSearch = document.querySelector('.js-search');
 const listImages = document.querySelector('.gallery');
@@ -12,6 +11,7 @@ const loader = document.querySelector('.loader');
 const btnLoader = document.querySelector('.btn-load');
 const loaderMore = document.querySelector('.loader-more');
 let currentPage = 1;
+const perPage = 40;
 let inputSearch = '';
 let simpleLightboxExem;
 
