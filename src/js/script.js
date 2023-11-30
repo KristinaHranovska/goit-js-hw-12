@@ -2,23 +2,48 @@ import iziToast from "izitoast";
 import "izitoast/dist/css/iziToast.min.css";
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
+import { createMarkup } from "./create-markup";
+import { getPictures } from "./get-pictures";
+
 
 const formSearch = document.querySelector('.js-search');
 const listImages = document.querySelector('.gallery');
 const loader = document.querySelector('.loader');
+const btnLoader = document.querySelector('.btn-load');
+const loaderMore = document.querySelector('.loader-more');
+let currentPage = 1;
+let inputSearch = '';
+let simpleLightboxExem;
+
 
 loader.style.display = 'none';
+loaderMore.style.display = 'none';
+btnLoader.style.display = 'none';
+
 formSearch.addEventListener('submit', onSearch);
+btnLoader.addEventListener('click', onLoadMore);
+
 
 function onSearch(event) {
   event.preventDefault();
   listImages.innerHTML = '';
   loader.style.display = 'block';
+  btnLoader.style.display = 'none';
+  currentPage = 1;
 
-  const inputValue = event.target.elements.search.value;
+  inputSearch = event.target.elements.search.value;
 
-  getPictures(inputValue)
-    .then(data => {
+  if (!inputSearch) {
+    iziToast.warning({
+      title: 'Caution',
+      message: 'Sorry, but you did not fill out the field!',
+    });
+    loader.style.display = 'none';
+    return;
+  }
+
+  getPictures(inputSearch, currentPage)
+    .then(({ data }) => {
       loader.style.display = 'none';
 
       if (!data.hits.length) {
@@ -26,17 +51,19 @@ function onSearch(event) {
           title: 'Error',
           message: 'Sorry, there are no images matching your search query. Please try again!',
         });
+        return;
       }
 
-      listImages.innerHTML = ("beforeend", createMarkup(data.hits));
+      listImages.insertAdjacentHTML("beforeend", createMarkup(data.hits));
 
-      const refreshPage = new SimpleLightbox('.gallery a', {
+      simpleLightboxExem = new SimpleLightbox('.gallery a', {
         captions: true,
         captionsData: 'alt',
         captionDelay: 250,
       });
-      refreshPage.refresh();
+      simpleLightboxExem.refresh();
 
+      btnLoader.style.display = 'block';
       formSearch.reset();
     })
     .catch((err) => {
@@ -45,60 +72,47 @@ function onSearch(event) {
     });
 }
 
-function getPictures(name) {
-  const BASE_URL = 'https://pixabay.com/api/';
-  const KEY = '40891115-11d0b88dd3a60afc830d1d27f';
+function onLoadMore() {
+  currentPage += 1;
+  simpleLightboxExem.destroy();
 
-  if (name.includes(' ')) {
-    name.replace(/\s+/g, '+');
-  }
+  loaderMore.style.display = 'block';
+  btnLoader.style.display = 'none';
 
-  const searchParams = new URLSearchParams({
-    key: KEY,
-    q: name,
-    image_type: 'photo',
-    orientation: 'horizontal',
-    safesearch: true,
-  })
+  const getHeightImgCard = () => document.querySelector('.gallery-item').getBoundingClientRect();
 
-  return fetch(`${BASE_URL}?${searchParams}`)
-    .then(res => {
-      if (!res.ok) {
-        throw new Error(res.statusText);
+  getPictures(inputSearch, currentPage)
+    .then(({ data }) => {
+      listImages.insertAdjacentHTML("beforeend", createMarkup(data.hits));
+      window.scrollBy({
+        top: getHeightImgCard().height * 2,
+        left: 0,
+        behavior: "smooth",
+      });
+
+      simpleLightboxExem = new SimpleLightbox('.gallery a', {
+        captions: true,
+        captionsData: 'alt',
+        captionDelay: 250,
+      });
+      simpleLightboxExem.refresh();
+
+      const totalPages = Math.ceil(data.totalHits / perPage);
+
+      if (currentPage > totalPages) {
+        iziToast.info({
+          title: 'Caution',
+          message: `We're sorry, but you've reached the end of search results.`,
+        });
+
+        btnLoader.style.display = 'none';
+        loaderMore.style.display = 'none';
+
+        return;
       }
-      return res.json();
-    })
-}
 
-function createMarkup(arr) {
-  return arr.map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) =>
-    `<li class="gallery-item">
-          <a class="gallery-link" href="${largeImageURL}">
-            <img
-              class="gallery-image"
-              src="${webformatURL}"
-              alt="${tags}"
-              width="360"
-            />
-          </a>
-          <div class="thumb-block">
-            <div class="block">
-              <h2 class="tittle">Likes</h2>
-              <p class="amount">${likes}</p>
-            </div>
-            <div class="block">
-              <h2 class="tittle">Views</h2>
-              <p class="amount">${views}</p>
-            </div>
-            <div class="block">
-              <h2 class="tittle">Comments</h2>
-              <p class="amount">${comments}</p>
-            </div>
-            <div class="block">
-              <h2 class="tittle">Downloads</h2>
-              <p class="amount">${downloads}</p>
-            </div>
-          </div>
-        </li>`)
-    .join('');
+      loaderMore.style.display = 'none';
+      btnLoader.style.display = 'block';
+    })
+    .catch(error => console.log(error));
 }
