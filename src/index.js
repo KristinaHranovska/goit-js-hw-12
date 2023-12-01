@@ -34,7 +34,7 @@ function onSearch(event) {
     loader.style.display = 'block';
     btnLoader.style.display = 'none';
 
-    inputSearch = event.target.elements.search.value;
+    inputSearch = event.target.elements.search.value.trim();
 
     if (!inputSearch) {
         iziToast.warning({
@@ -49,6 +49,14 @@ function onSearch(event) {
         .then(({ data }) => {
             loader.style.display = 'none';
 
+            const totalPages = Math.ceil(data.totalHits / perPage);
+
+            if (currentPage === totalPages) {
+                btnLoader.style.display = 'none';
+            } else {
+                btnLoader.style.display = 'block';
+            }
+
             if (!data.hits.length) {
                 iziToast.error({
                     title: 'Error',
@@ -59,14 +67,17 @@ function onSearch(event) {
 
             listImages.insertAdjacentHTML("beforeend", createMarkup(data.hits));
 
+            iziToast.success({
+                title: 'Wow',
+                message: `We found ${data.totalHits} pictures!`,
+            });
+
             simpleLightboxExem = new SimpleLightbox('.gallery a', {
                 captions: true,
                 captionsData: 'alt',
                 captionDelay: 250,
-            });
-            simpleLightboxExem.refresh();
+            }).refresh();
 
-            btnLoader.style.display = 'block';
             formSearch.reset();
         })
         .catch((err) => {
@@ -77,7 +88,6 @@ function onSearch(event) {
 
 function onLoadMore() {
     currentPage += 1;
-    simpleLightboxExem.destroy();
 
     loaderMore.style.display = 'block';
     btnLoader.style.display = 'none';
@@ -87,22 +97,18 @@ function onLoadMore() {
     getPictures(inputSearch, currentPage)
         .then(({ data }) => {
             listImages.insertAdjacentHTML("beforeend", createMarkup(data.hits));
+
             window.scrollBy({
                 top: getHeightImgCard().height * 2,
                 left: 0,
                 behavior: "smooth",
             });
 
-            simpleLightboxExem = new SimpleLightbox('.gallery a', {
-                captions: true,
-                captionsData: 'alt',
-                captionDelay: 250,
-            });
             simpleLightboxExem.refresh();
 
             const totalPages = Math.ceil(data.totalHits / perPage);
 
-            if (currentPage > totalPages) {
+            if (currentPage === totalPages) {
                 iziToast.info({
                     title: 'Caution',
                     message: `We're sorry, but you've reached the end of search results.`,
