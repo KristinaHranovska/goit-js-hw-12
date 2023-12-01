@@ -11,6 +11,7 @@ const listImages = document.querySelector('.gallery');
 const loader = document.querySelector('.loader');
 const btnLoader = document.querySelector('.btn-load');
 const loaderMore = document.querySelector('.loader-more');
+const endLoader = document.querySelector('.end-loader');
 let currentPage = 1;
 const perPage = 40;
 let inputSearch = '';
@@ -20,6 +21,7 @@ let simpleLightboxExem;
 loader.style.display = 'none';
 loaderMore.style.display = 'none';
 btnLoader.style.display = 'none';
+endLoader.style.display = 'none';
 
 formSearch.addEventListener('submit', onSearch);
 btnLoader.addEventListener('click', onLoadMore);
@@ -33,6 +35,7 @@ function onSearch(event) {
     listImages.innerHTML = '';
     loader.style.display = 'block';
     btnLoader.style.display = 'none';
+    endLoader.style.display = 'none';
 
     inputSearch = event.target.elements.search.value.trim();
 
@@ -53,6 +56,7 @@ function onSearch(event) {
 
             if (currentPage === totalPages) {
                 btnLoader.style.display = 'none';
+                endLoader.style.display = 'block';
             } else {
                 btnLoader.style.display = 'block';
             }
@@ -91,6 +95,7 @@ function onLoadMore() {
 
     loaderMore.style.display = 'block';
     btnLoader.style.display = 'none';
+    endLoader.style.display = 'none';
 
     const getHeightImgCard = () => document.querySelector('.gallery-item').getBoundingClientRect();
 
@@ -116,6 +121,7 @@ function onLoadMore() {
 
                 btnLoader.style.display = 'none';
                 loaderMore.style.display = 'none';
+                endLoader.style.display = 'block';
 
                 return;
             }
